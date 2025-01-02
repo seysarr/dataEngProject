@@ -43,15 +43,15 @@ task_check_prod_errors = BranchPythonOperator(
     task_id='check_prod_errors',
     python_callable=ingestionLib.check_task_status,
     dag=food_dag,
-    op_kwargs={'success_task_id': 'finish_well'},
-    trigger_rule='all_done'# all_done
+    op_kwargs={'success_task_id': 'cleanup'},
+    trigger_rule='all_done'
 )
 
 task_handle_ingestion_error = PythonOperator(
     task_id='handle_ingestion_error',
     python_callable=lambda: print("AN ERROR OCCURED DURING INGESTION !!!"),
     dag=food_dag,
-    trigger_rule='all_done'#one_failed
+    trigger_rule='all_done'
 )
 
 task_handle_wrangling_error = PythonOperator(
@@ -193,12 +193,6 @@ task_fill_graph_DB = PythonOperator(
     depends_on_past=False
 )
 
-last_task = DummyOperator(
-    task_id='finish_well',
-    # trigger_rule='none_failed',
-    dag=food_dag
-)
-
 task_Cleanup = BashOperator(
     task_id='cleanup',
     dag=food_dag,
@@ -208,10 +202,9 @@ task_Cleanup = BashOperator(
 
 
 # TODO: 
-# Manage error nodes, verify nodes trigger_rule, rearrange dags
 # Delete test files calls
 
-INGESTION
+# INGESTION
 [task_init_hummus_data, task_fetch_spooncular_recipes] >> task_check_ingestion_errors
 task_check_ingestion_errors >> [task_handle_ingestion_error, task_start_wrangling]
 task_handle_ingestion_error >> task_Cleanup
@@ -223,5 +216,5 @@ task_check_wrangling_errors >> [task_handle_wrangling_error, task_move_to_prod]
 task_handle_wrangling_error >> task_Cleanup
 
 # PRODUCTION
-task_move_to_prod >> task_fill_graph_DB >> task_check_prod_errors >> [task_handle_prod_error, last_task]
-[task_handle_prod_error, last_task] >> task_Cleanup
+task_move_to_prod >> task_fill_graph_DB >> task_check_prod_errors >> [task_handle_prod_error, task_Cleanup]
+task_handle_prod_error >> task_Cleanup

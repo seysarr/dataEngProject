@@ -16,13 +16,12 @@ def get_recipes_from_mongo():
 
 
 def delete_all(graph):
-    # Supprimer tous les nœuds et relations
     query1 = """
     MATCH (n)
     DETACH DELETE n
     """
     graph.run_query(query1)
-    print("Tous les nœuds et relations ont été supprimés.")
+    print("All nodes and relationships are deleted!!!")
 
 
 
@@ -30,7 +29,7 @@ def move_to_graph_DB(user, password):
     graph = Neo4jConnector("bolt://neo4j:7687", user, password)
     print("successfully connected!!!")
     delete_all(graph)
-    # setup_constraints(graph) # to uncomment
+    setup_constraints(graph)
     recipes = get_recipes_from_mongo()
     fill_data_neo4j(recipes, graph)
     print("Database successfully populated !!!")
@@ -110,57 +109,3 @@ def fill_data_neo4j(mongo_data, graph, batch_size=100):
         }
         
         graph.run_query(query, params)
-
-
-
-# def fill_data_neo4j(mongo_data, graph):
-#     for recipe in mongo_data:
-        
-#         query = """
-#         MERGE (r:Recipe {id: $id})
-#         SET r.title = $title, r.description = $description, r.duration = $duration, r.url = $url, r.serves = $serves
-        
-#         WITH r
-#         UNWIND $ingredients AS ingredient
-#         MERGE (ing:Ingredient {name: ingredient})
-#         MERGE (r)-[:CONTAINS]->(ing)
-        
-#         WITH r
-#         UNWIND $diets AS diet
-#         MERGE (d:Diet {name: diet})
-#         MERGE (r)-[:APPLICABLE_TO]->(d)
-        
-#         WITH r
-#         UNWIND $health_effects AS effect
-#         MERGE (h:HealthEffect {name: effect})
-#         MERGE (r)-[:IMPACTS]->(h)
-        
-#         WITH r
-#         UNWIND $nutrients AS nutrient
-#         MERGE (n:Nutrient {type: nutrient.type})
-#         SET n.quantity = nutrient.quantity, n.unit = nutrient.unit
-#         MERGE (r)-[:HAS_NUTRIENT]->(n)
-#         """
-        
-
-#         params = {
-#             "id": recipe["new_recipe_id"],
-#             "title": recipe["title"],
-#             "description": recipe["description"],
-#             "duration": recipe["duration"],
-#             "url": recipe["recipe_url"],
-#             "serves": recipe["serves"],
-#             "ingredients": recipe.get("ingredients", []),
-#             "diets": recipe.get("diets", []),
-#             "health_effects": recipe.get("health_effects", []),
-#             "nutrients": [
-#                 {"type": nutrient, "quantity": recipe[f"{nutrient} [{unit}]"], "unit": unit}
-#                 for nutrient, unit in [
-#                     ("calories", "cal"), ("totalFat", "g"), ("saturatedFat", "g"),
-#                     ("cholesterol", "mg"), ("sodium", "mg"), ("totalCarbohydrate", "g"),
-#                     ("dietaryFiber", "g"), ("sugars", "g"), ("protein", "g")
-#                 ]
-#             ]
-#         }
-        
-#         graph.run_query(query, params)

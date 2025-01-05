@@ -203,6 +203,7 @@ task_Cleanup = BashOperator(
 
 # TODO: 
 # Delete test files calls
+# Task to run a notebook for data science
 
 # INGESTION
 [task_init_hummus_data, task_fetch_spooncular_recipes] >> task_check_ingestion_errors

@@ -81,7 +81,6 @@ def diet_check(ingredient):
     for diet, keywords in diet_keywords.items():
         matches[diet] = any(re.search(rf'\b{keyword}\b', ingredient) for keyword in keywords)
     
-    # Verify excluded ingredients
     if matches['Vegetarian']:
         matches['Vegetarian'] = not any(re.search(rf'\b{keyword}\b', ingredient) for keyword in non_vegetarian)
     if matches['Vegan']:

@@ -57,7 +57,7 @@ In the root folder of the project where is located the docker-compose.yaml file,
 - "--build" is to build the solution, useful for the first run or when you make changes in config
 
 ## Analytics
-We provide a notebook on the ./notebooks folder to give an overview our database features.
+We provide a notebook on the ./notebooks folder to give an overview of our database features.
 
 ## Improvements
 

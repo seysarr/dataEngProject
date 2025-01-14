@@ -200,8 +200,8 @@ task_notebook = PapermillOperator(
     task_id="run_analytics_notebook",
     dag= food_dag,
     trigger_rule="all_success",
-    input_nb="/opt/airflow/notebooks/testBook.ipynb",
-    output_nb="/opt/airflow/notebooks/testBook.ipynb",
+    input_nb="/opt/airflow/notebooks/analytics.ipynb",
+    output_nb="/opt/airflow/notebooks/analytics.ipynb",
     parameters={}
 )
 

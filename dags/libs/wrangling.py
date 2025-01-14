@@ -18,7 +18,7 @@ def rearrange_broken_lines(output_folder, epoch):
     
     with open(input_file, 'r', encoding='utf-8') as f_in, open(output_file, 'w', encoding='utf-8') as f_out:
         lines = f_in.readlines()
-        current_line = lines[0]  # keep headers
+        current_line = lines[0]  # keep headers to not apply processing to them
 
         for line in lines[1:]:
             if line.strip().split(',')[0].isdigit():
@@ -35,7 +35,6 @@ def clean_data(output_folder, epoch):
     hummus_df = pd.read_csv(f'{output_folder}/sampled_data_fixed_{str(epoch)}.csv', on_bad_lines='skip') # some lines can't be parsed after merge
     
     spooncular_df = pd.read_csv(f'{output_folder}/spooncular_recipes_init_{str(epoch)}.csv', low_memory=False)
-    # spooncular_df = pd.read_csv(f'{output_folder}/spooncular_recipes_init_1734807676.csv') # For test
     
     hummus_df = hummus_df.drop(['Unnamed: 0','new_recipe_id','author_id','last_changed_date','food_kg_locator','new_author_id','servingsPerRecipe','servingSize [g]','caloriesFromFat [cal]',
                                 'average_rating','number_of_ratings','direction_size', 'ingredients_sizes','who_score','fsa_score','nutri_score','normalization_comment',
@@ -177,7 +176,6 @@ def determine_health_effects(row):
 
 def add_health_effects_column(output_folder, epoch):
     df = pd.read_csv(f'{output_folder}/recipes_merged_{str(epoch)}.csv')
-    # df = pd.read_csv(f'{output_folder}/recipes_merged_1735044849.csv') # For test
     df['health_effects'] = df.apply(determine_health_effects, axis=1)
     df['new_recipe_id'] = range(len(df))
     df.to_csv(f'{output_folder}/recipes_with_healthEffects_{epoch}.csv', index=False)
@@ -191,7 +189,6 @@ def save_to_mongoDB(output_folder, epoch):
     db_name = "FoodDB"
     collection_name = "recipes"
     csv_file_path = f'{output_folder}/recipes_with_healthEffects_{epoch}.csv'
-    # csv_file_path = f'{output_folder}/recipes_with_healthEffects_1735044849.csv' # For test
     
     db = client[db_name]
     collection = db[collection_name]

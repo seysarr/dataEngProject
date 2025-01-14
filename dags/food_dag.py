@@ -1,9 +1,11 @@
+import os
 import airflow
 import datetime
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
+from airflow.providers.papermill.operators.papermill import PapermillOperator
 import libs.ingestion as ingestionLib
 import libs.wrangling as wranglingLib
 import libs.production as productionLib
@@ -80,7 +82,8 @@ task_fetch_spooncular_recipes = PythonOperator(
     python_callable=ingestionLib.get_spooncular_recipes,
     op_kwargs={
         "output_folder": "/opt/airflow/dags/outputs",
-        "epoch": "{{ execution_date.int_timestamp }}"
+        "epoch": "{{ execution_date.int_timestamp }}",
+        "api_key": os.getenv('SPOONCULAR_API_KEY')
     },
     depends_on_past=False
 )
@@ -193,6 +196,15 @@ task_fill_graph_DB = PythonOperator(
     depends_on_past=False
 )
 
+task_notebook = PapermillOperator(
+    task_id="run_analytics_notebook",
+    dag= food_dag,
+    trigger_rule="all_success",
+    input_nb="/opt/airflow/notebooks/testBook.ipynb",
+    output_nb="/opt/airflow/notebooks/testBook.ipynb",
+    parameters={}
+)
+
 task_Cleanup = BashOperator(
     task_id='cleanup',
     dag=food_dag,
@@ -200,10 +212,6 @@ task_Cleanup = BashOperator(
     trigger_rule='all_done'
 )
 
-
-# TODO: 
-# Delete test files calls
-# Task to run a notebook for data science
 
 # INGESTION
 [task_init_hummus_data, task_fetch_spooncular_recipes] >> task_check_ingestion_errors
@@ -217,5 +225,5 @@ task_check_wrangling_errors >> [task_handle_wrangling_error, task_move_to_prod]
 task_handle_wrangling_error >> task_Cleanup
 
 # PRODUCTION
-task_move_to_prod >> task_fill_graph_DB >> task_check_prod_errors >> [task_handle_prod_error, task_Cleanup]
+task_move_to_prod >> task_fill_graph_DB >> task_notebook >> task_check_prod_errors >> [task_handle_prod_error, task_Cleanup]
 task_handle_prod_error >> task_Cleanup

@@ -1,4 +1,4 @@
-def get_spooncular_recipes(output_folder, epoch):
+def get_spooncular_recipes(output_folder, epoch, api_key):
     import csv
     import re
 
@@ -9,7 +9,7 @@ def get_spooncular_recipes(output_folder, epoch):
         ]
     recipes = []
     output_file = f'{output_folder}/spooncular_recipes_init_{str(epoch)}.csv'
-    api_data = get_api_data()
+    api_data = get_api_data(api_key)
 
     for recipe in api_data:
         nutrition = recipe.get("nutrition", {}).get("nutrients", [])
@@ -50,10 +50,11 @@ def get_spooncular_recipes(output_folder, epoch):
         writer.writerows(recipes)
     return True
 
-def get_api_data():
+
+def get_api_data(api_key):
     import requests
 
-    api_key = "b8f72c2132624ceca52c9e0408ff5cc9"
+    api_key = api_key
     base_url = "https://api.spoonacular.com/recipes"
     total_results = []
     offset = 0

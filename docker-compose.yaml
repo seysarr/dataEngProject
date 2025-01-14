@@ -64,6 +64,7 @@ x-airflow-common: &airflow-common
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
+    - ./notebooks:/opt/airflow/notebooks
     - ./config/airflow.cfg:/opt/airflow/airflow.cfg
   user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}"
   depends_on:
@@ -151,7 +152,9 @@ services:
     restart: always
   
   notebook:
-    image: jupyter/datascience-notebook
+    build:
+      context: ./notebooks
+      dockerfile: Dockerfile
     ports:
       - 8888:8888
     volumes:
@@ -159,7 +162,7 @@ services:
       - ./data:/home/jovyan/work/data
     environment:
       - JUPYTER_ENABLE_LAB=yes
-    command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
+
   
   airflow-webserver:
     <<: *airflow-common
@@ -172,6 +175,8 @@ services:
       timeout: 10s
       retries: 5
     restart: always
+    env_file:
+      - .env
 
   airflow-scheduler:
     <<: *airflow-common
@@ -186,6 +191,8 @@ services:
       timeout: 10s
       retries: 5
     restart: always
+    env_file:
+      - .env
 
   airflow-worker:
     <<: *airflow-common
@@ -198,6 +205,8 @@ services:
       timeout: 10s
       retries: 5
     restart: always
+    env_file:
+      - .env
 
   airflow-init:
     <<: *airflow-common
